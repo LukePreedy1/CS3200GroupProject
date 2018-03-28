@@ -129,6 +129,8 @@ CREATE TABLE episode_writer_relationship (
 
 SELECT * FROM tv_show;
 
+SELECT * FROM season;
+
 
 
 
