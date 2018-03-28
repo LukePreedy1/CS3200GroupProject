@@ -4,6 +4,8 @@ CREATE DATABASE imdb_group_project;
 
 USE imdb_group_project;
 
+# A lot of writers / actors / director's don't have any information on their imdb page, so I'm not sure what to do about that
+
 
 DROP TABLE IF EXISTS actor;
 
@@ -71,16 +73,10 @@ CREATE TABLE episode (
 	episode_name VARCHAR(256),
     length INT NOT NULL,
     episode_score DECIMAL(2,1) NOT NULL,
-    director_name VARCHAR(256) NOT NULL,
-    air_date DATE NOT NULL,
+    year_of_release INT NOT NULL,
 	CONSTRAINT show_id_fk2
 		FOREIGN KEY (show_id)
         REFERENCES tv_show (show_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-	CONSTRAINT director_name_fk
-		FOREIGN KEY (director_name)
-        REFERENCES director (director_name)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -126,10 +122,31 @@ CREATE TABLE episode_writer_relationship (
         ON UPDATE CASCADE
 );
 
+DROP TABLE IF EXISTS episode_director_relationship;
+
+CREATE TABLE episode_director_relationship (
+	episode_id VARCHAR(7) NOT NULL,
+    director_name VARCHAR(256) NOT NULL,
+    CONSTRAINT episode_director_relationship_pk
+		PRIMARY KEY (episode_id, director_name),
+	CONSTRAINT episode_id_fk3
+		FOREIGN KEY (episode_id)
+        REFERENCES episode (episode_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+	CONSTRAINT director_name_fk
+		FOREIGN KEY (director_name)
+        REFERENCES director (director_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
 
 SELECT * FROM tv_show;
 
 SELECT * FROM season;
+
+SELECT * FROM episode;
 
 
 
