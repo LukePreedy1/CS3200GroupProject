@@ -12,19 +12,32 @@ def add_show_from_title(title):
 
     show = get_show_from_title(title)
 
+    # CANNOT ACCESS PRODUCTION COMPANY, NEED TO REMOVE!
     add_show = ("INSERT INTO tv_show "
-                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, studio_name) "
-                "VALUES (%d, %s, %d, %d, %d, %s, %s)")
+                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language) "
+                "VALUES (%d, %s, %d, %d, %d, %s)")
 
-    imdb_show_score_getter(show)
-    #ia.update(show.movieID, ['main', 'vote details'])
+    # Need to call this before checking data.  Still not sure why, but its important.
+    ia.update(show)
 
     print(show['kind'])
 
-    print(show['number of episodes'])
+    print(show['seasons'])
+    print(show['rating'])
 
-    #print(add_show % (show.movieID, show['title'], imdb_show_score_getter(show), show['']))
+    # need to call before checking episode data
+    ia.update(show, 'episodes')
+
+    print(type(show.getID()))
+
+    print(add_show % (int(show.movieID),
+                      show['title'],
+                      float(show['rating']),
+                      int(show['seasons']),
+                      int(show['number of episodes']),
+                      show['lang'][0]))
 
 
+# Example demonstrating it works as intended
 add_show_from_title('breaking bad')
 
