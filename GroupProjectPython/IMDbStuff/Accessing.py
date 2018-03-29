@@ -34,10 +34,11 @@ def parse_id_from_href(href):
     return href[ind+2:ind+9]
 
 
-# Returns a list strings of top 250 rated tv shows id's.
-# imdbpy doesn't have a way to get the top 250 specifically, so I'm going to use HTML scraping.
-def get_top_250():
-    # URL for the page with all top 250 entries
+# Returns a list strings of top 100 rated tv shows id's.
+# imdbpy doesn't have a way to get the top 100 specifically, so I'm going to use HTML scraping.
+# I was going to do top 250, but that was taking >1hour to run, so this is just making my life easier.
+def get_top_100():
+    # URL for the page with all top 100 entries
     url = "http://www.imdb.com/chart/toptv/?ref_=nv_tvv_250_3"
     page = requests.get(url)
 
@@ -45,7 +46,7 @@ def get_top_250():
     results = soup.find_all('td', class_='titleColumn')
     returning = []
 
-    for i in range(0, 250):
+    for i in range(0, 100):
         returning.append(parse_id_from_href(results[i].find('a')['href']))
 
     return returning

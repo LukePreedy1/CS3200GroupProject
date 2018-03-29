@@ -153,7 +153,7 @@ def add_episode_to_database(episode, show_id):
 
 # The Main method that will be run to make everything do what it's supposed to do
 def main():
-    ids = get_top_250()
+    ids = get_top_100()
 
     for show_id in ids:
         add_show_from_id(show_id)
