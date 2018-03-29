@@ -4,34 +4,35 @@ CREATE DATABASE imdb_group_project;
 
 USE imdb_group_project;
 
-# A lot of writers / actors / director's don't have any information on their imdb page, so I'm not sure what to do about that
+# A lot of writers / actors / director's don't have any information on their imdb page, 
+# so I'm not sure what to do about that.
 
 
 DROP TABLE IF EXISTS actor;
 
 CREATE TABLE actor (
+	actor_id VARCHAR(7) PRIMARY KEY,
 	actor_name VARCHAR(256) NOT NULL,
-    actor_birthdate DATE NOT NULL,
-    CONSTRAINT actor_pk
-		PRIMARY KEY (actor_name, actor_birthdate)
+    actor_birthyear INT,
+    actor_deathyear INT
 );
 
 DROP TABLE IF EXISTS director;
 
 CREATE TABLE director (
+	director_id VARCHAR(7) PRIMARY KEY,
 	director_name VARCHAR(256) NOT NULL,
-    director_birthdate DATE NOT NULL,
-    CONSTRAINT director_pk
-		PRIMARY KEY (director_name, director_birthdate)
+    director_birthyear INT,
+    director_deathyear INT
 );
 
 DROP TABLE IF EXISTS writer;
 
 CREATE TABLE writer (
+	writer_id VARCHAR(7) PRIMARY KEY,
 	writer_name VARCHAR(256) NOT NULL,
-    writer_birthdate DATE NOT NULL,
-    CONSTRAINT writer_pk
-		PRIMARY KEY (writer_name, writer_birthdate)
+    writer_birthyear INT,
+    writer_deathyear INT
 );
 
 
@@ -44,7 +45,8 @@ CREATE TABLE tv_show (
     show_score DECIMAL(2,1) NOT NULL,
     num_seasons INT NOT NULL,
     num_episodes INT NOT NULL,
-    show_language VARCHAR(256) NOT NULL
+    show_language VARCHAR(256) NOT NULL,
+    is_airing BOOLEAN NOT NULL
 );
 
 DROP TABLE IF EXISTS season;
@@ -87,17 +89,17 @@ DROP TABLE IF EXISTS episode_actor_relationship;
 
 CREATE TABLE epoisode_actor_relationship (
 	episode_id VARCHAR(7) NOT NULL,
-    actor_name  VARCHAR(256) NOT NULL,
+    actor_id  VARCHAR(7) NOT NULL,
     CONSTRAINT episode_actor_relationship_pk
-		PRIMARY KEY (episode_id, actor_name),
+		PRIMARY KEY (episode_id, actor_id),
 	CONSTRAINT episode_id_fk1
 		FOREIGN KEY (episode_id)
         REFERENCES episode (episode_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-	CONSTRAINT actor_name_fk
-		FOREIGN KEY (actor_name)
-        REFERENCES actor (actor_name)
+	CONSTRAINT actor_id_fk
+		FOREIGN KEY (actor_id)
+        REFERENCES actor (actor_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -107,17 +109,17 @@ DROP TABLE IF EXISTS episode_writer_relationship;
 
 CREATE TABLE episode_writer_relationship (
 	episode_id VARCHAR(7) NOT NULL,
-    writer_name VARCHAR(256) NOT NULL,
+    writer_id VARCHAR(7) NOT NULL,
     CONSTRAINT episode_writer_relationship_pk
-		PRIMARY KEY (episode_id, writer_name),
+		PRIMARY KEY (episode_id, writer_id),
 	CONSTRAINT episode_id_fk2
 		FOREIGN KEY (episode_id)
         REFERENCES episode (episode_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-	CONSTRAINT writer_name_fk
-		FOREIGN KEY (writer_name)
-        REFERENCES writer (writer_name)
+	CONSTRAINT writer_id_fk
+		FOREIGN KEY (writer_id)
+        REFERENCES writer (writer_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -126,17 +128,17 @@ DROP TABLE IF EXISTS episode_director_relationship;
 
 CREATE TABLE episode_director_relationship (
 	episode_id VARCHAR(7) NOT NULL,
-    director_name VARCHAR(256) NOT NULL,
+    director_id VARCHAR(7) NOT NULL,
     CONSTRAINT episode_director_relationship_pk
-		PRIMARY KEY (episode_id, director_name),
+		PRIMARY KEY (episode_id, director_id),
 	CONSTRAINT episode_id_fk3
 		FOREIGN KEY (episode_id)
         REFERENCES episode (episode_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-	CONSTRAINT director_name_fk
-		FOREIGN KEY (director_name)
-        REFERENCES director (director_name)
+	CONSTRAINT director_id_fk
+		FOREIGN KEY (director_id)
+        REFERENCES director (director_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

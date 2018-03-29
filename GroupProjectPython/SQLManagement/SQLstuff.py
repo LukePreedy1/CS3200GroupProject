@@ -30,8 +30,8 @@ def add_show_from_id(id):
 
     # CANNOT ACCESS PRODUCTION COMPANY, NEED TO REMOVE!
     add_show = ("INSERT INTO tv_show "
-                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language) "
-                "VALUES (%s, %s, %1.1f, %d, %d, %s)")
+                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, is_airing) "
+                "VALUES (%s, %s, %1.1f, %d, %d, %s, %r)")
 
     # Need to call this before checking data.  Still not sure why, but it's important.
     ia.update(show, 'episodes')
@@ -65,7 +65,8 @@ def add_show_from_id(id):
                               float(show['rating']),
                               num_seasons,
                               int(show['number of episodes']),
-                              show_language)
+                              show_language,
+                              bool(show['airing']))
 
     # Performs the given code on the database
     perform_operation_on_db(show_result)
@@ -109,13 +110,13 @@ def add_show_from_id(id):
             try:
                 e = show['episodes'][i][j]
                 ia.update(e)
-                add_episode_to_database(e, show_id)
+                add_episode_to_database(e, show_id, ia)
             except KeyError as ke:
                 print("Show %s does not have an episode %d in season %d" % (show_title, j, i))
 
 
 # Given an episode object, will add the data in the episode to the database.
-def add_episode_to_database(episode, show_id):
+def add_episode_to_database(episode, show_id, ia):
     add_episode = ("INSERT INTO episode "
                    "(episode_id, show_id, season_num, episode_num, episode_name, length, "
                    "episode_score, year_of_release) "
@@ -135,6 +136,42 @@ def add_episode_to_database(episode, show_id):
                                     int(episode['year']))
 
     perform_operation_on_db(episode_result)
+
+    directors = episode['director']
+    writers = episode['writer']
+    actors = episode['cast']
+
+    for d in directors:
+        ia.update(d)
+        add_director_to_database(d, episode_id)
+
+    for w in writers:
+        ia.update(w)
+        add_writer_to_database(w, episode_id)
+
+    for a in actors:
+        ia.update(a)
+        add_actor_to_database(a, episode_id)
+
+
+# adds the given director of the given episode to the database.
+def add_director_to_database(d, episode_id):
+    add_director = ("INSERT INTO director "
+                    "(director_id, director_name, director_birthyear, director_deathyear) "
+                    "VALUES (%s, %s, %d, %d)")
+
+    add_relationship = ("INSERT INTO episode_director_relationship "
+                        "(episode_id, director_id) "
+                        "VALUES (%s, %s)")
+
+    director_id = "\"" + d.personID + "\""
+
+    director_name = "\"" + d['name'] + "\""
+
+    director_results = add_director % ()
+
+
+
 
 
 # The Main method that will be run to make everything do what it's supposed to do
