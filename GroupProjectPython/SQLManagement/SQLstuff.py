@@ -33,31 +33,22 @@ def add_show_from_id(id):
                 "(show_id, show_title, show_score, num_seasons, num_episodes, show_language) "
                 "VALUES (%s, %s, %1.1f, %d, %d, %s)")
 
-    # Need to call these before checking data.  Still not sure why, but it's important.
-    ia.update(show)
+    # Need to call this before checking data.  Still not sure why, but it's important.
     ia.update(show, 'episodes')
 
     # When inserting strings, they must be in quotes, otherwise it throws an error.
-    # Also, python has terrible syntax for appending strings.  Just a complaint.
-    show_title = "\""
-    show_title += show['title']
-    show_title += "\""
+    show_title = "\"" + show['title'] + "\""
 
-    show_language = "\""
-
+    # Some shows don't have a listed language (Looking at you Ash vs. Evil Dead), so I'm just calling it "unlisted"
     try:
-        show_language += show['lang'][0]
+        show_language = "\"" + show['lang'][0] + "\""
     except KeyError as ke:
         print("Failed on language for show: ")
         print(show_title)
-        print("Will just set it to English and just pretend.")
-        show_language += "English"
+        print("Will just set it to unlisted and just pretend.")
+        show_language = "\"unlisted\""
 
-    show_language += "\""
-
-    show_id = "\""
-    show_id += show.movieID
-    show_id += "\""
+    show_id = "\"" + show.movieID + "\""
 
     # I'm doing a lot of checking for edge cases.  For some reason, Naruto: Shippûden at rank 237, despite having
     # 505 episodes, does not have any seasons.  To account for that, if a show does not have any seasons, it will
@@ -116,28 +107,23 @@ def add_show_from_id(id):
         # except to make sure that it will be caught, and doesn't cause any errors.
         for j in range(0, len(show['episodes'][i]) + 1):
             try:
-                add_episode_to_database(show['episodes'][i][j], show_id)
+                e = show['episodes'][i][j]
+                ia.update(e)
+                add_episode_to_database(e, show_id)
             except KeyError as ke:
                 print("Show %s does not have an episode %d in season %d" % (show_title, j, i))
 
 
 # Given an episode object, will add the data in the episode to the database.
 def add_episode_to_database(episode, show_id):
-    iae = imdb.IMDb()
-    iae.update(episode)
-
     add_episode = ("INSERT INTO episode "
                    "(episode_id, show_id, season_num, episode_num, episode_name, length, "
                    "episode_score, year_of_release) "
                    "VALUES (%s, %s, %d, %d, %s, %d, %1.1f, %d)")
 
-    episode_id = "\""
-    episode_id += episode.movieID
-    episode_id += "\""
+    episode_id = "\"" + episode.movieID + "\""
 
-    episode_title = "\""
-    episode_title += episode['title']
-    episode_title += "\""
+    episode_title = "\"" + episode['title'] + "\""
 
     episode_result = add_episode % (episode_id,
                                     show_id,
