@@ -30,8 +30,8 @@ def add_show_from_id(id):
 
     # CANNOT ACCESS PRODUCTION COMPANY, NEED TO REMOVE!
     add_show = ("INSERT INTO tv_show "
-                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, is_airing) "
-                "VALUES (%s, %s, %1.1f, %d, %d, %s, %r)")
+                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language) "
+                "VALUES (%s, %s, %1.1f, %d, %d, %s)")
 
     # Need to call this before checking data.  Still not sure why, but it's important.
     ia.update(show, 'episodes')
@@ -65,8 +65,7 @@ def add_show_from_id(id):
                               float(show['rating']),
                               num_seasons,
                               int(show['number of episodes']),
-                              show_language,
-                              bool(show['airing']))
+                              show_language)
 
     # Performs the given code on the database
     perform_operation_on_db(show_result)
@@ -76,10 +75,13 @@ def add_show_from_id(id):
         add_season = ("INSERT INTO season "
                       "(show_id, season_num, num_episodes) "
                       "VALUES (%s, %d, %d)")
+
         season_result = add_season % (show_id,
                                       0,
                                       len(show['episodes']['unknown season']))
+
         perform_operation_on_db(season_result)
+
         for ep in range(0, len(show['episodes']['unknown season'])):
             try:
                 add_episode_to_database(show['episodes']['unknown season'][ep], show_id)
@@ -91,10 +93,12 @@ def add_show_from_id(id):
         add_season = ("INSERT INTO season "
                       "(show_id, season_num, num_episodes) " 
                       "VALUES (%s, %d, %d)")
+
         try:
             season_result = add_season % (show_id,
                                           i,
                                           len(show['episodes'][i]))
+            
             perform_operation_on_db(season_result)
         except KeyError as ke:
             # For some reason, Dragonball Z at rank 74 does not have a season 2, but does have seasons 3 and 4,
@@ -112,7 +116,9 @@ def add_show_from_id(id):
                 ia.update(e)
                 add_episode_to_database(e, show_id, ia)
             except KeyError as ke:
-                print("Show %s does not have an episode %d in season %d" % (show_title, j, i))
+                continue
+
+        print("Added show %s to the database" % show_title)
 
 
 # Given an episode object, will add the data in the episode to the database.
@@ -137,41 +143,60 @@ def add_episode_to_database(episode, show_id, ia):
 
     perform_operation_on_db(episode_result)
 
-    directors = episode['director']
-    writers = episode['writer']
-    actors = episode['cast']
+    try:
+        directors = episode['director']
+    except KeyError as ke:
+        directors = []
+
+    try:
+        writers = episode['writer']
+    except KeyError as ke:
+        writers = []
+
+    try:
+        actors = episode['cast']
+    except KeyError as ke:
+        actors = []
 
     for d in directors:
         ia.update(d)
-        add_director_to_database(d, episode_id)
+        add_person_to_database(d, episode_id, "\"director\"")
 
     for w in writers:
         ia.update(w)
-        add_writer_to_database(w, episode_id)
+        add_person_to_database(w, episode_id, "\"writer\"")
 
     for a in actors:
         ia.update(a)
-        add_actor_to_database(a, episode_id)
+        add_person_to_database(a, episode_id, "\"actor\"")
 
 
 # adds the given director of the given episode to the database.
-def add_director_to_database(d, episode_id):
-    add_director = ("INSERT INTO director "
-                    "(director_id, director_name, director_birthyear, director_deathyear) "
-                    "VALUES (%s, %s, %d, %d)")
+def add_person_to_database(p, episode_id, type):
+    # The IGNORE is there so that the same person won't be inserted twice.
+    add_person = "INSERT IGNORE INTO person (person_id, person_name"
 
-    add_relationship = ("INSERT INTO episode_director_relationship "
-                        "(episode_id, director_id) "
-                        "VALUES (%s, %s)")
+    # The IGNORE is there so if a person has multiple roles, they won't be added badly.
+    add_relationship = ("INSERT IGNORE INTO episode_person_relationship "
+                        "(episode_id, person_id, person_role) "
+                        "VALUES (%s, %s, %s)")
 
-    director_id = "\"" + d.personID + "\""
+    person_id = "\"" + p.personID + "\""
 
-    director_name = "\"" + d['name'] + "\""
+    person_name = "\"" + p['name'] + "\""
 
-    director_results = add_director % ()
+    # only include the birthdate if IMDb has one listed
+    if p.get('birth date') is None:
+        add_person += ") VALUES (%s, %s)"
+        person_results = add_person % (person_id, person_name)
+    else:
+        add_person += ", person_birthdate) VALUES (%s, %s, '%s')"
+        person_results = add_person % (person_id, person_name, p.get('birth date'))
 
+    relationship_results = add_relationship % (episode_id, person_id, type)
 
-
+    perform_operation_on_db(person_results)
+    perform_operation_on_db(relationship_results)
 
 
 # The Main method that will be run to make everything do what it's supposed to do
@@ -180,6 +205,8 @@ def main():
 
     for show_id in ids:
         add_show_from_id(show_id)
+
+    exit(0)
 
 
 if __name__ == "__main__":

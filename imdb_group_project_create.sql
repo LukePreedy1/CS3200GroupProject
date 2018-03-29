@@ -8,31 +8,12 @@ USE imdb_group_project;
 # so I'm not sure what to do about that.
 
 
-DROP TABLE IF EXISTS actor;
+DROP TABLE IF EXISTS person;
 
-CREATE TABLE actor (
-	actor_id VARCHAR(7) PRIMARY KEY,
-	actor_name VARCHAR(256) NOT NULL,
-    actor_birthyear INT,
-    actor_deathyear INT
-);
-
-DROP TABLE IF EXISTS director;
-
-CREATE TABLE director (
-	director_id VARCHAR(7) PRIMARY KEY,
-	director_name VARCHAR(256) NOT NULL,
-    director_birthyear INT,
-    director_deathyear INT
-);
-
-DROP TABLE IF EXISTS writer;
-
-CREATE TABLE writer (
-	writer_id VARCHAR(7) PRIMARY KEY,
-	writer_name VARCHAR(256) NOT NULL,
-    writer_birthyear INT,
-    writer_deathyear INT
+CREATE TABLE person (
+	person_id VARCHAR(7) PRIMARY KEY,
+    person_name VARCHAR(256) NOT NULL,
+    person_birthdate DATE 
 );
 
 
@@ -45,8 +26,7 @@ CREATE TABLE tv_show (
     show_score DECIMAL(2,1) NOT NULL,
     num_seasons INT NOT NULL,
     num_episodes INT NOT NULL,
-    show_language VARCHAR(256) NOT NULL,
-    is_airing BOOLEAN NOT NULL
+    show_language VARCHAR(256) NOT NULL
 );
 
 DROP TABLE IF EXISTS season;
@@ -82,63 +62,24 @@ CREATE TABLE episode (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-		
 
 
-DROP TABLE IF EXISTS episode_actor_relationship;
+DROP TABLE IF EXISTS episode_person_relationship;
 
-CREATE TABLE epoisode_actor_relationship (
+CREATE TABLE episode_person_relationship (
 	episode_id VARCHAR(7) NOT NULL,
-    actor_id  VARCHAR(7) NOT NULL,
-    CONSTRAINT episode_actor_relationship_pk
-		PRIMARY KEY (episode_id, actor_id),
-	CONSTRAINT episode_id_fk1
+    person_id VARCHAR(7) NOT NULL,
+    person_role ENUM('actor', 'writer', 'director'),
+    CONSTRAINT episode_person_relationship_pk
+		PRIMARY KEY (episode_id, person_id, person_role),
+	CONSTRAINT episode_id_fk0
 		FOREIGN KEY (episode_id)
         REFERENCES episode (episode_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-	CONSTRAINT actor_id_fk
-		FOREIGN KEY (actor_id)
-        REFERENCES actor (actor_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
-
-DROP TABLE IF EXISTS episode_writer_relationship;
-
-CREATE TABLE episode_writer_relationship (
-	episode_id VARCHAR(7) NOT NULL,
-    writer_id VARCHAR(7) NOT NULL,
-    CONSTRAINT episode_writer_relationship_pk
-		PRIMARY KEY (episode_id, writer_id),
-	CONSTRAINT episode_id_fk2
-		FOREIGN KEY (episode_id)
-        REFERENCES episode (episode_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-	CONSTRAINT writer_id_fk
-		FOREIGN KEY (writer_id)
-        REFERENCES writer (writer_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
-DROP TABLE IF EXISTS episode_director_relationship;
-
-CREATE TABLE episode_director_relationship (
-	episode_id VARCHAR(7) NOT NULL,
-    director_id VARCHAR(7) NOT NULL,
-    CONSTRAINT episode_director_relationship_pk
-		PRIMARY KEY (episode_id, director_id),
-	CONSTRAINT episode_id_fk3
-		FOREIGN KEY (episode_id)
-        REFERENCES episode (episode_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-	CONSTRAINT director_id_fk
-		FOREIGN KEY (director_id)
-        REFERENCES director (director_id)
+	CONSTRAINT person_id_fk0
+		FOREIGN KEY (person_id)
+        REFERENCES person (person_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -149,6 +90,8 @@ SELECT * FROM tv_show;
 SELECT * FROM season;
 
 SELECT * FROM episode;
+
+SELECT * FROM person;
 
 
 
