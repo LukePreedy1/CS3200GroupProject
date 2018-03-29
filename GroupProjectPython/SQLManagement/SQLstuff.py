@@ -98,7 +98,7 @@ def add_show_from_id(id):
             season_result = add_season % (show_id,
                                           i,
                                           len(show['episodes'][i]))
-            
+
             perform_operation_on_db(season_result)
         except KeyError as ke:
             # For some reason, Dragonball Z at rank 74 does not have a season 2, but does have seasons 3 and 4,
@@ -158,17 +158,48 @@ def add_episode_to_database(episode, show_id, ia):
     except KeyError as ke:
         actors = []
 
+    # A lot of time is wasted trying to add the same person many times, so I'm trying to fix that.  Will query the
+    # database (which is faster than checking IMDb, for each person) then if it is not there, will add the person.
     for d in directors:
+        if check_if_database_has_person(d.personID):
+            continue
         ia.update(d)
         add_person_to_database(d, episode_id, "\"director\"")
 
     for w in writers:
+        if check_if_database_has_person(w.personID):
+            continue
         ia.update(w)
         add_person_to_database(w, episode_id, "\"writer\"")
 
     for a in actors:
+        if check_if_database_has_person(a.personID):
+            continue
         ia.update(a)
         add_person_to_database(a, episode_id, "\"actor\"")
+
+    print("Added episode %s to the database" % episode_title)
+
+
+# Returns a boolean based on if the database contains the given person id
+def check_if_database_has_person(id):
+    cnx1 = mysql.connector.connect(user='root',
+                                   password='Yourface1234',
+                                   host='127.0.0.1',
+                                   database='imdb_group_project')
+
+    cursor = cnx1.cursor()
+
+    query = "SELECT person_id FROM person WHERE person_id = %s" % id
+
+    cursor.execute(query)
+
+    for person_id in cursor:
+        cnx1.close()
+        return True
+
+    cnx1.close()
+    return False
 
 
 # adds the given director of the given episode to the database.
@@ -182,6 +213,8 @@ def add_person_to_database(p, episode_id, type):
                         "VALUES (%s, %s, %s)")
 
     person_id = "\"" + p.personID + "\""
+
+
 
     person_name = "\"" + p['name'] + "\""
 
@@ -197,6 +230,8 @@ def add_person_to_database(p, episode_id, type):
 
     perform_operation_on_db(person_results)
     perform_operation_on_db(relationship_results)
+
+    print("Added person %s to the database" % person_name)
 
 
 # The Main method that will be run to make everything do what it's supposed to do
