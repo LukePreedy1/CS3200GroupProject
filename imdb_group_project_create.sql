@@ -4,8 +4,9 @@ CREATE DATABASE imdb_group_project;
 
 USE imdb_group_project;
 
-# A lot of writers / actors / director's don't have any information on their imdb page, 
-# so I'm not sure what to do about that.
+# Since it is taking forever to run the program, I've simplified the data.
+# Now, it will only track the first 5 actors found on IMDb, making this data much 
+# easier to test and work with.
 
 
 DROP TABLE IF EXISTS person;
@@ -26,7 +27,8 @@ CREATE TABLE tv_show (
     show_score DECIMAL(2,1) NOT NULL,
     num_seasons INT NOT NULL,
     num_episodes INT NOT NULL,
-    show_language VARCHAR(256) NOT NULL
+    show_language VARCHAR(256) NOT NULL,
+    show_rank INT UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS season;
@@ -83,6 +85,58 @@ CREATE TABLE episode_person_relationship (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+
+DROP PROCEDURE IF EXISTS get_titles_of_top_given_number;
+
+DELIMITER //
+
+# Gets the titles and ranks of all shows with a rank below the given amount
+CREATE PROCEDURE get_titles_of_top_given_number(IN num INT)
+BEGIN
+	SELECT show_title, show_rank FROM tv_show 
+		WHERE show_rank <= num
+        ORDER BY show_rank;
+END//
+
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS get_top_rated_show_title;
+
+DELIMITER //
+
+# Returns the title of the top rated show
+CREATE FUNCTION get_top_rated_show_title()
+	RETURNS VARCHAR(256)
+BEGIN
+	DECLARE ret VARCHAR(256);
+    
+    SELECT show_title INTO ret FROM tv_show
+		WHERE show_rank = 1;
+        
+	RETURN ret;
+END//
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS get_shows_with_director;
+
+DELIMITER //
+
+# Gets the set of show titles that have an actor 
+# with the given name in any of their episodes.
+CREATE PROCEDURE get_shows_with_actor(IN actor_name VARCHAR(256))
+BEGIN
+	SELECT show_title FROM tv_show JOIN
+		episode ON (episode.show_id = tv_show.show_id) JOIN
+        episode_person_relationship ON 
+			(episode_person_relationship.episode_id = episode.episode_id) AND
+			(person_role = 'actor') JOIN
+		person ON (person.person_id = episode_person_relationship.person_id)
+		WHERE person_name = actor_name;
+END//
+
+DELIMITER ;
 
 
 SELECT * FROM tv_show;

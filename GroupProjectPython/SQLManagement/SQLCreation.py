@@ -23,15 +23,15 @@ def perform_operation_on_db(op):
 
 
 # Gets the title of the show as a string, adds the show to the database.  does not return
-def add_show_from_id(id):
+def add_show_from_id(id, rank):
     ia = imdb.IMDb()
 
     show = ia.get_movie(id)
 
     # CANNOT ACCESS PRODUCTION COMPANY, NEED TO REMOVE!
     add_show = ("INSERT INTO tv_show "
-                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language) "
-                "VALUES (%s, %s, %1.1f, %d, %d, %s)")
+                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, show_rank) "
+                "VALUES (%s, %s, %1.1f, %d, %d, %s, %d)")
 
     # Need to call this before checking data.  Still not sure why, but it's important.
     ia.update(show, 'episodes')
@@ -65,7 +65,8 @@ def add_show_from_id(id):
                               float(show['rating']),
                               num_seasons,
                               int(show['number of episodes']),
-                              show_language)
+                              show_language,
+                              rank)
 
     # Performs the given code on the database
     perform_operation_on_db(show_result)
@@ -158,6 +159,9 @@ def add_episode_to_database(episode, show_id, ia):
     except KeyError as ke:
         actors = []
 
+    # It's taking a long time to add shows with many actors and writers, so to make it easier,
+    # I'm only going to add 5 actors from each episode.
+
     # A lot of time is wasted trying to add the same person many times, so I'm trying to fix that.  Will query the
     # database (which is faster than checking IMDb, for each person) then if it is not there, will add the person.
     for d in directors:
@@ -172,11 +176,15 @@ def add_episode_to_database(episode, show_id, ia):
         ia.update(w)
         add_person_to_database(w, episode_id, "\"writer\"")
 
+    num_actors = 0
     for a in actors:
+        if num_actors == 5:
+            break
         if check_if_database_has_person(a.personID):
             continue
         ia.update(a)
         add_person_to_database(a, episode_id, "\"actor\"")
+        num_actors += 1
 
     print("Added episode %s to the database" % episode_title)
 
@@ -236,10 +244,16 @@ def add_person_to_database(p, episode_id, type):
 
 # The Main method that will be run to make everything do what it's supposed to do
 def main():
-    ids = get_top_100()
+    # Will loop until given valid input
+    while True:
+        num = int(input("Enter how many shows you want to retrieve, up to 250:\n"))
+        if 0 < int(num) <= 250:
+            break
 
-    for show_id in ids:
-        add_show_from_id(show_id)
+    ids = get_top_number(num)
+
+    for i in range(0, len(ids)):
+        add_show_from_id(ids[i], i+1)
 
     exit(0)
 
