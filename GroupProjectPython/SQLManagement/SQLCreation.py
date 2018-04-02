@@ -2,6 +2,8 @@ from IMDbStuff.Accessing import *
 
 import mysql.connector
 
+from SQLManagement import SQLRetrieval
+
 
 # Does the given operation to the database
 def perform_operation_on_db(op):
@@ -165,28 +167,35 @@ def add_episode_to_database(episode, show_id, ia):
     # A lot of time is wasted trying to add the same person many times, so I'm trying to fix that.  Will query the
     # database (which is faster than checking IMDb, for each person) then if it is not there, will add the person.
     for d in directors:
+        add_relationship_to_database(get_person_id(d), episode_id, "'director'")
         if check_if_database_has_person(d.personID):
             continue
         ia.update(d)
-        add_person_to_database(d, episode_id, "\"director\"")
+        add_person_to_database(d)
 
     for w in writers:
+        add_relationship_to_database(get_person_id(w), episode_id, "'writer'")
         if check_if_database_has_person(w.personID):
             continue
         ia.update(w)
-        add_person_to_database(w, episode_id, "\"writer\"")
+        add_person_to_database(w)
 
     num_actors = 0
     for a in actors:
         if num_actors == 5:
             break
+        add_relationship_to_database(get_person_id(a), episode_id, "'actor'")
         if check_if_database_has_person(a.personID):
             continue
         ia.update(a)
-        add_person_to_database(a, episode_id, "\"actor\"")
+        add_person_to_database(a)
         num_actors += 1
 
     print("Added episode %s to the database" % episode_title)
+
+
+def get_person_id(p):
+    return "\"" + p.personID + "\""
 
 
 # Returns a boolean based on if the database contains the given person id
@@ -211,18 +220,11 @@ def check_if_database_has_person(id):
 
 
 # adds the given director of the given episode to the database.
-def add_person_to_database(p, episode_id, type):
+def add_person_to_database(p):
     # The IGNORE is there so that the same person won't be inserted twice.
     add_person = "INSERT IGNORE INTO person (person_id, person_name"
 
-    # The IGNORE is there so if a person has multiple roles, they won't be added badly.
-    add_relationship = ("INSERT IGNORE INTO episode_person_relationship "
-                        "(episode_id, person_id, person_role) "
-                        "VALUES (%s, %s, %s)")
-
     person_id = "\"" + p.personID + "\""
-
-
 
     person_name = "\"" + p['name'] + "\""
 
@@ -234,16 +236,25 @@ def add_person_to_database(p, episode_id, type):
         add_person += ", person_birthdate) VALUES (%s, %s, '%s')"
         person_results = add_person % (person_id, person_name, p.get('birth date'))
 
-    relationship_results = add_relationship % (episode_id, person_id, type)
-
     perform_operation_on_db(person_results)
-    perform_operation_on_db(relationship_results)
 
     print("Added person %s to the database" % person_name)
 
 
-# The Main method that will be run to make everything do what it's supposed to do
-def main():
+def add_relationship_to_database(p_id, e_id, role):
+    # The IGNORE is there so if a person has multiple roles, they won't be added badly.
+    add_relationship = ("INSERT IGNORE INTO episode_person_relationship "
+                        "(episode_id, person_id, person_role) "
+                        "VALUES (%s, %s, %s)")
+
+    relationship_results = add_relationship % (e_id, p_id, role)
+    perform_operation_on_db(relationship_results)
+
+
+# Initializes the database with the given data
+def initialize_database():
+    reset_database()
+
     # Will loop until given valid input
     while True:
         num = int(input("Enter how many shows you want to retrieve, up to 250:\n"))
@@ -253,7 +264,46 @@ def main():
     ids = get_top_number(num)
 
     for i in range(0, len(ids)):
-        add_show_from_id(ids[i], i+1)
+        add_show_from_id(ids[i], i + 1)
+
+
+# Resets the database data
+def reset_database():
+    cnx2 = mysql.connector.connect(user='root',
+                                   password='Yourface1234',
+                                   host='127.0.0.1',
+                                   database='imdb_group_project')
+
+    cursor = cnx2.cursor()
+
+    cursor.execute("CALL reset_database()")
+
+    cnx2.close()
+
+
+# The Main method that will be run to make everything do what it's supposed to do
+def main():
+    # Will loop until given valid input
+    while True:
+        action = input("What do you want to do:\n"
+                       "initialize database\n"
+                       "reset database\n"
+                       "retrieve data\n"
+                       "quit\n"
+                       "\n")
+        if action == "initialize database":
+            initialize_database()
+            break
+        elif action == "retrieve data":
+            SQLRetrieval.main()
+            break
+        elif action == "reset database":
+            reset_database()
+            break
+        elif action == "quit":
+            exit(0)
+        else:
+            print("Invalid action")
 
     exit(0)
 
