@@ -217,4 +217,6 @@ SELECT * FROM season;
 
 SELECT * FROM episode;
 
-SELECT * FROM person;
+SELECT * FROM person GROUP BY person_id ORDER BY person_name LIMIT 10;
+
+
