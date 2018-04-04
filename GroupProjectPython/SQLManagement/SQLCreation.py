@@ -26,6 +26,10 @@ def perform_operation_on_db(op):
 
 # Gets the title of the show as a string, adds the show to the database.  does not return
 def add_show_from_id(id, rank):
+    # Will quit if the
+    if check_if_database_has_show(id):
+        return
+
     ia = imdb.IMDb()
 
     show = ia.get_movie(id)
@@ -198,6 +202,27 @@ def get_person_id(p):
     return "\"" + p.personID + "\""
 
 
+# Returns a boolean based on if the database contains the given show id
+def check_if_database_has_show(id):
+    cnx = mysql.connector.connect(user='root',
+                                   password='Yourface1234',
+                                   host='127.0.0.1',
+                                   database='imdb_group_project')
+
+    cursor = cnx.cursor()
+
+    query = "SELECT show_id FROM tv_show WHERE show_id = %s" % id
+
+    cursor.execute(query)
+
+    for show_id in cursor:
+        cnx.close()
+        return True
+
+    cnx.close()
+    return False
+
+
 # Returns a boolean based on if the database contains the given person id
 def check_if_database_has_person(id):
     cnx1 = mysql.connector.connect(user='root',
@@ -253,8 +278,6 @@ def add_relationship_to_database(p_id, e_id, role):
 
 # Initializes the database with the given data
 def initialize_database():
-    reset_database()
-
     # Will loop until given valid input
     while True:
         num = int(input("Enter how many shows you want to retrieve, up to 250:\n"))

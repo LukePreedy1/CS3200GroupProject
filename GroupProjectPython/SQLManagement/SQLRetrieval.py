@@ -150,9 +150,180 @@ def get_episode_from_show():
     print('\n')
 
 
+# A generic retrieval method to retrieve data from the database
+# Will be rather primitive, since its hard to make it better
+def retrieve_info_from_table():
+    cnx = mysql.connector.connect(user='root',
+                                   password='Yourface1234',
+                                   host='127.0.0.1',
+                                   database='imdb_group_project')
+
+    cursor = cnx.cursor()
+
+    query = "SHOW TABLES"
+    cursor.execute(query)
+
+    print("Enter the name of the table you want to retrieve from:")
+
+    tables = []
+
+    for t in cursor:
+        tables.append(t[0])
+        print(t[0])
+
+    table = input()
+
+    while table not in tables:
+        table = input("Please enter a valid table name:\n")
+
+    query = "SHOW COLUMNS FROM %s" % table
+    cursor.execute(query)
+
+    print("Enter the name of the column(s) from the table you selected:")
+    print("For multiple columns, enter multiple names on a single line separated by a space")
+
+    columns = []
+
+    for c in cursor:
+        columns.append(c[0])
+        print(c[0] + '\t' + c[1])
+
+    col = input()
+    col = col.split(' ')
+
+    # Checks that all the names given are valid
+    while True:
+        safe = True
+        for c in col:
+            if c in columns:
+                safe = safe and True
+            else:
+                safe = False
+        if safe:
+            break
+        elif len(col) == 1 and col[0] == "*":
+            col = columns
+            break
+        else:
+            col = input("Please enter only valid column names:\n")
+            col = col.split(' ')
+
+    sorting = False
+
+    while True:
+        s = input("Do you want to sort (y/n):\n")
+        if s == "y":
+            sorting = True
+            break
+        elif s == "n":
+            sorting = False
+            break
+        else:
+            print("Invalid input")
+
+    if sorting:
+        while True:
+            print("Column to sort by:")
+            for c in col:
+                print(c)
+
+            sort_by = input()
+
+            if sort_by in col:
+                break
+            else:
+                print("Enter valid column name")
+
+        while True:
+            asc = True
+
+            a = input("Ascending or descending (a/d):")
+
+            if a == "a":
+                asc = True
+                break
+            elif a == "d":
+                asc = False
+                break
+            else:
+                print("Invalid input")
+
+    grouping = False
+
+    while True:
+        g = input("Do you want to group by a column (y/n):\n")
+
+        if g == "y":
+            grouping = True
+            break
+        elif g == "n":
+            grouping = False
+            break
+        else:
+            print("Invalid input")
+
+    if grouping:
+        while True:
+            print("Choose a column to group by:")
+            for c in col:
+                print(c)
+
+            group_by = input()
+
+            if group_by in col:
+                break
+            else:
+                print("Invalid input")
+
+    limiting = False
+
+    while True:
+        l = input("Do you want to limit the results (y/n):\n")
+
+        if l == "y":
+            limiting = True
+            break
+        elif l == "n":
+            limiting = False
+            break
+        else:
+            print("Invalid input")
+
+    if limiting:
+        limit_by = int(input("Enter number to limit by:\n"))
+
+    query = "SELECT "
+
+    for c in col:
+        query += c + ", "
+
+    query = query[:-2]
+    query += " FROM %s" % table
+
+    if grouping:
+        query += " GROUP BY %s" % group_by
+
+    if sorting:
+        query += " ORDER BY %s" % sort_by
+
+    if limiting:
+        query += " LIMIT %d" % limit_by
+
+    cursor.execute(query)
+
+    for res in cursor:
+        result = ""
+
+        for r in res:
+            result += str(r) + " "
+
+        print(result)
+
+
 def main():
     while True:
         action = input("What do you want to do:\n"
+                       "retrieve data\n"
                        "get show of rank\n"
                        "get top rated show\n"
                        "get shows with actor\n"
@@ -173,6 +344,8 @@ def main():
             get_number_of_roles()
         elif action == "get episode from show":
             get_episode_from_show()
+        elif action == "retrieve data":
+            retrieve_info_from_table()
         elif action == "quit":
             exit(0)
         else:
