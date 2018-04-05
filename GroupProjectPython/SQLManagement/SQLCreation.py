@@ -34,8 +34,10 @@ def add_show_from_id(id, rank):
 
     show = ia.get_movie(id)
 
-    # CANNOT ACCESS PRODUCTION COMPANY, NEED TO REMOVE!
-    add_show = ("INSERT INTO tv_show "
+    if check_if_database_has_show(show.movieID):
+        return
+
+    add_show = ("INSERT IGNORE INTO tv_show "
                 "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, show_rank) "
                 "VALUES (%s, %s, %1.1f, %d, %d, %s, %d)")
 
@@ -66,20 +68,25 @@ def add_show_from_id(id, rank):
         num_seasons = 0
 
     # Chose not to make the movieID an int, since that would get rid of leading 0's
-    show_result = add_show % (show_id,
-                              show_title,
-                              float(show['rating']),
-                              num_seasons,
-                              int(show['number of episodes']),
-                              show_language,
-                              rank)
+    # TRY CATCH IS FOR BUG TESTING! REMOVE WHEN DONE TODO
+    try:
+        show_result = add_show % (show_id,
+                                  show_title,
+                                  float(show['rating']),
+                                  num_seasons,
+                                  int(show['number of episodes']),
+                                  show_language,
+                                  rank)
+    except KeyError as ke:
+        print("Problem with %s" % show_title)
+        exit(1)
 
     # Performs the given code on the database
     perform_operation_on_db(show_result)
 
     # A special edge case for when the show is listed as having 0 seasons
     if num_seasons == 0:
-        add_season = ("INSERT INTO season "
+        add_season = ("INSERT IGNORE INTO season "
                       "(show_id, season_num, num_episodes) "
                       "VALUES (%s, %d, %d)")
 
@@ -97,7 +104,7 @@ def add_show_from_id(id, rank):
 
     # Will add all the seasons to the database
     for i in range(1, show['seasons']+1):
-        add_season = ("INSERT INTO season "
+        add_season = ("INSERT IGNORE INTO season "
                       "(show_id, season_num, num_episodes) " 
                       "VALUES (%s, %d, %d)")
 
@@ -130,7 +137,7 @@ def add_show_from_id(id, rank):
 
 # Given an episode object, will add the data in the episode to the database.
 def add_episode_to_database(episode, show_id, ia):
-    add_episode = ("INSERT INTO episode "
+    add_episode = ("INSERT IGNORE INTO episode "
                    "(episode_id, show_id, season_num, episode_num, episode_name, length, "
                    "episode_score, year_of_release) "
                    "VALUES (%s, %s, %d, %d, %s, %d, %1.1f, %d)")
@@ -190,6 +197,7 @@ def add_episode_to_database(episode, show_id, ia):
             break
         add_relationship_to_database(get_person_id(a), episode_id, "'actor'")
         if check_if_database_has_person(a.personID):
+            num_actors += 1
             continue
         ia.update(a)
         add_person_to_database(a)
@@ -202,12 +210,12 @@ def get_person_id(p):
     return "\"" + p.personID + "\""
 
 
-# Returns a boolean based on if the database contains the given show id
+# Useful for when the program breaks midway through running, and I don't want to have to start from the beginning
 def check_if_database_has_show(id):
     cnx = mysql.connector.connect(user='root',
-                                   password='Yourface1234',
-                                   host='127.0.0.1',
-                                   database='imdb_group_project')
+                                  password='Yourface1234',
+                                  host='127.0.0.1',
+                                  database='imdb_group_project')
 
     cursor = cnx.cursor()
 

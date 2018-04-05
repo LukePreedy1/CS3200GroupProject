@@ -211,7 +211,7 @@ DELIMITER ;
 
 CALL reset_database();
 
-SELECT * FROM tv_show;
+SELECT * FROM tv_show ORDER BY show_rank;
 
 SELECT * FROM season;
 
