@@ -26,7 +26,7 @@ def perform_operation_on_db(op):
 
 # Gets the title of the show as a string, adds the show to the database.  does not return
 def add_show_from_id(id, rank):
-    # Will quit if the
+    # Will quit if the show already exists
     if check_if_database_has_show(id):
         return
 
