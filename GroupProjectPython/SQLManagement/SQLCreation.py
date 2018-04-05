@@ -132,7 +132,7 @@ def add_show_from_id(id, rank):
             except KeyError as ke:
                 continue
 
-        print("Added show %s to the database" % show_title)
+    print("Added show %s to the database" % show_title)
 
 
 # Given an episode object, will add the data in the episode to the database.
