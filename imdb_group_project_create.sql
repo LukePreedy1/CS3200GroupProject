@@ -207,16 +207,14 @@ BEGIN
     SET FOREIGN_KEY_CHECKS = 1;
 END//
 
+DROP PROCEDURE IF EXISTS get_shows_with_number_of_seasons//
+
+CREATE PROCEDURE get_shows_with_number_of_seasons(IN num INT)
+BEGIN
+	SELECT show_id, show_title FROM tv_show
+		WHERE num_seasons = num;
+END//
+
 DELIMITER ;
 
-CALL reset_database();
-
-SELECT * FROM tv_show ORDER BY show_rank;
-
-SELECT * FROM season;
-
-SELECT * FROM episode;
-
-SELECT * FROM person GROUP BY person_id ORDER BY person_name LIMIT 10;
-
-
+CALL get_shows_with_number_of_seasons(2);

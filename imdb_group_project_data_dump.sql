@@ -1,3 +1,5 @@
+# Contains the data from the top 100 shows on IMDb
+
 CREATE DATABASE  IF NOT EXISTS `imdb_group_project` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `imdb_group_project`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)

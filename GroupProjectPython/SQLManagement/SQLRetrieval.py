@@ -208,8 +208,6 @@ def retrieve_info_from_table():
             col = input("Please enter only valid column names:\n")
             col = col.split(' ')
 
-    sorting = False
-
     while True:
         s = input("Do you want to sort (y/n):\n")
         if s == "y":
@@ -248,8 +246,6 @@ def retrieve_info_from_table():
             else:
                 print("Invalid input")
 
-    grouping = False
-
     while True:
         g = input("Do you want to group by a column (y/n):\n")
 
@@ -274,8 +270,6 @@ def retrieve_info_from_table():
                 break
             else:
                 print("Invalid input")
-
-    limiting = False
 
     while True:
         l = input("Do you want to limit the results (y/n):\n")
@@ -320,6 +314,29 @@ def retrieve_info_from_table():
         print(result)
 
 
+def get_shows_with_number_of_seasons():
+    num_seasons = int(input("Enter the number of seasons in the shows you want to look up:\n"))
+
+    cnx = mysql.connector.connect(user='root',
+                                  password='Yourface1234',
+                                  host='127.0.0.1',
+                                  database='imdb_group_project')
+
+    cursor = cnx.cursor()
+
+    cursor.callproc('get_shows_with_number_of_seasons', [num_seasons])
+
+    print("show_id\t\t\tshow_title")
+
+    res = []
+
+    for result in cursor.stored_results():
+        res = result.fetchall()
+
+    for r in res:
+        print("%s\t\t\t%s" % (r[0], r[1]))
+
+
 def main():
     while True:
         action = input("What do you want to do:\n"
@@ -330,6 +347,7 @@ def main():
                        "get shows of top rank\n"
                        "get number of roles\n"
                        "get episode from show\n"
+                       "get shows with number of seasons\n"
                        "quit\n"
                        "\n")
         if action == "get show of rank":
@@ -346,6 +364,8 @@ def main():
             get_episode_from_show()
         elif action == "retrieve data":
             retrieve_info_from_table()
+        elif action == "get shows with number of seasons":
+            get_shows_with_number_of_seasons()
         elif action == "quit":
             exit(0)
         else:
