@@ -338,6 +338,8 @@ def get_shows_with_number_of_seasons():
     for r in res:
         print("%s\t\t\t%s" % (r[0], r[1]))
 
+    print()
+
 
 def main():
     while True:

@@ -35,9 +35,6 @@ def add_show_from_id(id, rank):
 
     show = ia.get_movie(id)
 
-    if check_if_database_has_show(show.movieID):
-        return
-
     add_show = ("INSERT IGNORE INTO tv_show "
                 "(show_id, show_title, show_score, num_seasons, num_episodes, show_language")
 
@@ -73,27 +70,21 @@ def add_show_from_id(id, rank):
         num_seasons = 0
 
     # Chose not to make the movieID an int, since that would get rid of leading 0's
-    # TRY CATCH IS FOR BUG TESTING! REMOVE WHEN DONE TODO
-    try:
-        if rank != 0:
-            show_result = add_show % (show_id,
-                                      show_title,
-                                      float(show['rating']),
-                                      num_seasons,
-                                      int(show['number of episodes']),
-                                      show_language,
-                                      rank)
-        else:
-            show_result = add_show % (show_id,
-                                      show_title,
-                                      float(show['rating']),
-                                      num_seasons,
-                                      int(show['number of episodes']),
-                                      show_language)
-
-    except KeyError as ke:
-        print("Problem with %s" % show_title)
-        exit(1)
+    if rank != 0:
+        show_result = add_show % (show_id,
+                                  show_title,
+                                  float(show['rating']),
+                                  num_seasons,
+                                  int(show['number of episodes']),
+                                  show_language,
+                                  rank)
+    else:
+        show_result = add_show % (show_id,
+                                  show_title,
+                                  float(show['rating']),
+                                  num_seasons,
+                                  int(show['number of episodes']),
+                                  show_language)
 
     # Performs the given code on the database
     perform_operation_on_db(show_result)
