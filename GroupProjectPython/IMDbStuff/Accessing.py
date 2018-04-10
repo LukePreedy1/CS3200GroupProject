@@ -11,6 +11,16 @@ def parse_id_from_href(href):
     return href[ind+2:ind+9]
 
 
+def get_movie_from_title(title):
+    ia = imdb.IMDb()
+
+    res = ia.search_movie(title)
+
+    result = res[0]
+
+    return result.movieID
+
+
 # Returns a list strings of top given number ranked tv shows, in the order of their rank on IMDb
 def get_top_number(num):
     # URL for the page with all top 100 entries

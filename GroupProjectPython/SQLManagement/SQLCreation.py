@@ -24,7 +24,8 @@ def perform_operation_on_db(op):
         exit(1)
 
 
-# Gets the title of the show as a string, adds the show to the database.  does not return
+# Gets the title of the show as a string, adds the show to the database.  does not return.
+# If the given rank is 0, does not give a rank.  Assumes this is manually input information
 def add_show_from_id(id, rank):
     # Will quit if the show already exists
     if check_if_database_has_show(id):
@@ -38,8 +39,12 @@ def add_show_from_id(id, rank):
         return
 
     add_show = ("INSERT IGNORE INTO tv_show "
-                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language, show_rank) "
-                "VALUES (%s, %s, %1.1f, %d, %d, %s, %d)")
+                "(show_id, show_title, show_score, num_seasons, num_episodes, show_language")
+
+    if rank != 0:
+        add_show += ", show_rank) VALUES (%s, %s, %1.1f, %d, %d, %s, %d)"
+    else:
+        add_show += ") VALUES (%s, %s, %1.1f, %d, %d, %s)"
 
     # Need to call this before checking data.  Still not sure why, but it's important.
     ia.update(show, 'episodes')
@@ -59,7 +64,7 @@ def add_show_from_id(id, rank):
     show_id = "\"" + show.movieID + "\""
 
     # I'm doing a lot of checking for edge cases.  For some reason, Naruto: Shippûden at rank 237, despite having
-    # 505 episodes, does not have any seasons.  To account for that, if a show does not have any seasons, it will
+    # 505 episodes, does not have any seasons.  To acunt for that, if a show does not have any seasons, it will
     # set it to 0, and just pretend that it makes sense.
     try:
         num_seasons = int(show['seasons'])
@@ -70,13 +75,22 @@ def add_show_from_id(id, rank):
     # Chose not to make the movieID an int, since that would get rid of leading 0's
     # TRY CATCH IS FOR BUG TESTING! REMOVE WHEN DONE TODO
     try:
-        show_result = add_show % (show_id,
-                                  show_title,
-                                  float(show['rating']),
-                                  num_seasons,
-                                  int(show['number of episodes']),
-                                  show_language,
-                                  rank)
+        if rank != 0:
+            show_result = add_show % (show_id,
+                                      show_title,
+                                      float(show['rating']),
+                                      num_seasons,
+                                      int(show['number of episodes']),
+                                      show_language,
+                                      rank)
+        else:
+            show_result = add_show % (show_id,
+                                      show_title,
+                                      float(show['rating']),
+                                      num_seasons,
+                                      int(show['number of episodes']),
+                                      show_language)
+
     except KeyError as ke:
         print("Problem with %s" % show_title)
         exit(1)
@@ -312,6 +326,15 @@ def reset_database():
     cnx2.close()
 
 
+# Inserts the given show into the database, regardless of if it is in the IMDb top 250
+def insert_show():
+    show_name = input("Enter name of the show you wish to insert:\n")
+
+    id = get_movie_from_title(show_name)
+
+    add_show_from_id(id, 0)
+
+
 # The Main method that will be run to make everything do what it's supposed to do
 def main():
     # Will loop until given valid input
@@ -320,6 +343,7 @@ def main():
                        "initialize database\n"
                        "reset database\n"
                        "retrieve data\n"
+                       "insert show\n"
                        "quit\n"
                        "\n")
         if action == "initialize database":
@@ -330,6 +354,9 @@ def main():
             break
         elif action == "reset database":
             reset_database()
+            break
+        elif action == "insert show":
+            insert_show()
             break
         elif action == "quit":
             exit(0)
