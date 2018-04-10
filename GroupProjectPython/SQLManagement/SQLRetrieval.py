@@ -154,9 +154,9 @@ def get_episode_from_show():
 # Will be rather primitive, since its hard to make it better
 def retrieve_info_from_table():
     cnx = mysql.connector.connect(user='root',
-                                   password='Yourface1234',
-                                   host='127.0.0.1',
-                                   database='imdb_group_project')
+                                  password='Yourface1234',
+                                  host='127.0.0.1',
+                                  database='imdb_group_project')
 
     cursor = cnx.cursor()
 
@@ -233,8 +233,6 @@ def retrieve_info_from_table():
                 print("Enter valid column name")
 
         while True:
-            asc = True
-
             a = input("Ascending or descending (a/d):")
 
             if a == "a":
@@ -272,12 +270,12 @@ def retrieve_info_from_table():
                 print("Invalid input")
 
     while True:
-        l = input("Do you want to limit the results (y/n):\n")
+        will_limit = input("Do you want to limit the results (y/n):\n")
 
-        if l == "y":
+        if will_limit == "y":
             limiting = True
             break
-        elif l == "n":
+        elif will_limit == "n":
             limiting = False
             break
         else:
@@ -299,6 +297,10 @@ def retrieve_info_from_table():
 
     if sorting:
         query += " ORDER BY %s" % sort_by
+        if asc:
+            query += " ASC"
+        else:
+            query += " DESC"
 
     if limiting:
         query += " LIMIT %d" % limit_by

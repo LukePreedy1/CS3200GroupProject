@@ -233,11 +233,12 @@ def check_if_database_has_show(id):
 
     cursor = cnx.cursor()
 
-    query = "SELECT show_id FROM tv_show WHERE show_id = %s" % id
+    query = "SELECT show_id, show_title FROM tv_show WHERE show_id = %s" % id
 
     cursor.execute(query)
 
-    for show_id in cursor:
+    for result in cursor:
+        print("The given show %s is already in the database" % result[1])
         cnx.close()
         return True
 

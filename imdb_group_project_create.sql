@@ -217,6 +217,5 @@ END//
 
 DELIMITER ;
 
-CALL get_shows_with_number_of_seasons(2);
+SELECT * FROM tv_show ORDER BY show_rank DESC;
 
-SELECT * FROM tv_show WHERE show_title = 'Legion';
