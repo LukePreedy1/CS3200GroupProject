@@ -232,3 +232,11 @@ SELECT * FROM episode_person_relationship;
 
 SELECT * FROM season;
 
+SELECT * FROM person 
+	JOIN episode_person_relationship ON (person.person_id = episode_person_relationship.person_id)
+    JOIN episode ON (episode.episode_id = episode_person_relationship.episode_id)
+    JOIN tv_show ON (episode.show_id = tv_show.show_id)
+ORDER BY tv_show.show_id ASC
+LIMIT 99999;
+
+
