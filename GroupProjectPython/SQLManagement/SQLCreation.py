@@ -327,6 +327,10 @@ def insert_show():
 
     id = get_movie_from_title(show_name)
 
+    if id == 0:
+        print("Given name had no show associated with it.")
+        return
+
     add_show_from_id(id, 0)
 
 
