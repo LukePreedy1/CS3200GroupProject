@@ -127,7 +127,7 @@ def get_episode_from_show():
 
     episode_num = int(input("Enter the number of the episode:\n"))
 
-    print('\n')
+    print()
 
     cnx = mysql.connector.connect(user='root',
                                   password='Yourface1234',
@@ -147,7 +147,10 @@ def get_episode_from_show():
         print("ID: %s\nName: %s\nLength: %dmins\nScore: %1.1f\nYear of Release: %d\n"
               % (episode_id, episode_name, length, episode_score, year_of_release))
 
-    print('\n')
+    if len(res) == 0:
+        print("The given show %s does not exist in the database." % show_name)
+
+    print()
 
 
 # A generic retrieval method to retrieve data from the database

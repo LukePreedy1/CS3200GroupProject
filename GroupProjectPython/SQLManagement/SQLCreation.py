@@ -1,4 +1,4 @@
-from IMDbStuff.Accessing import *
+from IMDbManagement.Accessing import *
 
 import mysql.connector
 
@@ -60,7 +60,7 @@ def add_show_from_id(id, rank):
 
     show_id = "\"" + show.movieID + "\""
 
-    # I'm doing a lot of checking for edge cases.  For some reason, Naruto: Shippûden at rank 237, despite having
+    # I'm doing a lot of checking for edge cases.  For some reason, Naruto: Shippuden at rank 237, despite having
     # 505 episodes, does not have any seasons.  To acunt for that, if a show does not have any seasons, it will
     # set it to 0, and just pretend that it makes sense.
     try:
@@ -294,9 +294,12 @@ def add_relationship_to_database(p_id, e_id, role):
 def initialize_database():
     # Will loop until given valid input
     while True:
-        num = int(input("Enter how many shows you want to retrieve, up to 250:\n"))
-        if 0 < int(num) <= 250:
-            break
+        try:
+            num = int(input("Enter how many shows you want to retrieve, up to 250:\n"))
+            if 0 < int(num) <= 250:
+                break
+        except ValueError:
+            print("Invalid value, try again.")
 
     ids = get_top_number(num)
 
@@ -340,16 +343,13 @@ def main():
                        "\n")
         if action == "initialize database":
             initialize_database()
-            break
         elif action == "retrieve data":
             SQLRetrieval.main()
             break
         elif action == "reset database":
             reset_database()
-            break
         elif action == "insert show":
             insert_show()
-            break
         elif action == "quit":
             exit(0)
         else:

@@ -122,6 +122,7 @@ DROP FUNCTION IF EXISTS get_show_of_rank;
 
 DELIMITER //
 
+# Returns the title of the show that has the given rank.
 CREATE FUNCTION get_show_of_rank(r INT)
 	RETURNS VARCHAR(256)
 BEGIN
@@ -179,6 +180,8 @@ DROP PROCEDURE IF EXISTS get_episode_from_show;
 
 DELIMITER //
 
+# Returns information about an episode when given the title, season number, and episode number
+# in that season.
 CREATE PROCEDURE get_episode_from_show(IN show_t VARCHAR(256), 
 	IN season_n INT, IN episode_n INT)
 BEGIN
@@ -207,8 +210,10 @@ BEGIN
     SET FOREIGN_KEY_CHECKS = 1;
 END//
 
+
 DROP PROCEDURE IF EXISTS get_shows_with_number_of_seasons//
 
+# Selects all show titles and ID's that have the given number of seasons.
 CREATE PROCEDURE get_shows_with_number_of_seasons(IN num INT)
 BEGIN
 	SELECT show_id, show_title FROM tv_show
@@ -218,4 +223,12 @@ END//
 DELIMITER ;
 
 SELECT * FROM tv_show ORDER BY show_rank DESC;
+
+SELECT * FROM episode;
+
+SELECT * FROM person;
+
+SELECT * FROM episode_person_relationship;
+
+SELECT * FROM season;
 
