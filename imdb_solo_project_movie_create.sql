@@ -95,8 +95,8 @@ CREATE TABLE movie (
     movie_score DECIMAL(2,1) NOT NULL,
     movie_length INT NOT NULL,
     movie_language VARCHAR(256) NOT NULL,
-    movie_rank INT,
-    movie_release_year INT NOT NULL
+    movie_release_year INT NOT NULL,
+    movie_rank INT
 );
 
 
@@ -269,5 +269,7 @@ SELECT * FROM person
     JOIN tv_show ON (episode.show_id = tv_show.show_id)
 ORDER BY tv_show.show_id ASC
 LIMIT 99999;
+
+SELECT * FROM movie_person_relationship LIMIT 1000;
 
 
