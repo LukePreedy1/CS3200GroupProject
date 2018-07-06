@@ -267,7 +267,7 @@ def reset_database():
     cnx2 = mysql.connector.connect(user='root',
                                    password='Yourface1234',
                                    host='127.0.0.1',
-                                   database='imdb_group_project')
+                                   database='imdb_solo_project')
 
     cursor = cnx2.cursor()
 
